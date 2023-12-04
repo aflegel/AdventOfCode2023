@@ -19,6 +19,7 @@ if (int.TryParse(Console.ReadLine(), out var day))
 IAdventDay GetDay(int day, string input) => day switch
 {
 	1 => new Day01(input),
+	2 => new Day02(input),
 	_ => throw new NotImplementedException()
 };
 
