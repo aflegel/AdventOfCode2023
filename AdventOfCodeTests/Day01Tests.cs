@@ -22,9 +22,9 @@ zoneight234
 	[Fact]
 	public void Part1ShouldMatchExampleCount()
 	{
-		var day1 = new Day01(input);
+		var day = new Day01(input);
 
-		var answer = day1.Part1();
+		var answer = day.Part1();
 
 		answer.Should().Be("142");
 	}
@@ -32,9 +32,9 @@ zoneight234
 	[Fact]
 	public void Part2ShouldMatchExampleCount()
 	{
-		var day1 = new Day01(input2);
+		var day = new Day01(input2);
 
-		var answer = day1.Part2();
+		var answer = day.Part2();
 
 		answer.Should().Be("281");
 	}

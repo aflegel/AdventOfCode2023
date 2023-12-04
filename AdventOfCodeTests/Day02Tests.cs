@@ -15,9 +15,9 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
 	[Fact]
 	public void Part1ShouldMatchExampleCount()
 	{
-		var day1 = new Day02(input);
+		var day = new Day02(input);
 
-		var answer = day1.Part1();
+		var answer = day.Part1();
 
 		answer.Should().Be("8");
 	}
@@ -25,9 +25,9 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
 	[Fact]
 	public void Part2ShouldMatchExampleCount()
 	{
-		var day1 = new Day02(input);
+		var day = new Day02(input);
 
-		var answer = day1.Part2();
+		var answer = day.Part2();
 
 		answer.Should().Be("2286");
 	}
