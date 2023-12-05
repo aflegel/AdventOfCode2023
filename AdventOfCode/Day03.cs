@@ -1,6 +1,4 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace AdventOfCode;
+﻿namespace AdventOfCode;
 
 public class Day03 : IAdventDay
 {
