@@ -1,6 +1,6 @@
 ﻿namespace AdventOfCode;
 
-public partial class Day13(string input) : IAdventDay
+public class Day13(string input) : IAdventDay
 {
 	private string[][] InputArray { get; } = input.Split("\n\n")
 		.Select(s => s.Split("\n").ToArray()).ToArray();

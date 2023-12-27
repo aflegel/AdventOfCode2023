@@ -2,7 +2,7 @@
 
 namespace AdventOfCode;
 
-public partial class Day14(string input) : IAdventDay
+public class Day14(string input) : IAdventDay
 {
 	private enum Direction { North, East, South, West }
 	private char[,] InputArray { get; } = input.Split("\n").To2DArray();
