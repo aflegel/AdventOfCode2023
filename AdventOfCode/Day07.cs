@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace AdventOfCode;
+﻿namespace AdventOfCode;
 
 public class Day07(string input) : IAdventDay
 {

@@ -89,9 +89,9 @@ public class Day08 : IAdventDay
 			for (var i = 0; i < elements.Length; i++)
 			{
 
-				// lcm_of_array_elements (n1, n2, ... 0) = 0.
+				// elements (n1, n2, ... 0) = 0.
 				// For negative number we convert into
-				// positive and calculate lcm_of_array_elements.
+				// positive and calculate elements.
 				if (elements[i] == 0)
 					return 0;
 				else if (elements[i] < 0)
@@ -110,8 +110,8 @@ public class Day08 : IAdventDay
 			}
 
 			// If divisor able to completely divide any number
-			// from array multiply with lcm_of_array_elements
-			// and store into lcm_of_array_elements and continue
+			// from array multiply with elements
+			// and store into elements and continue
 			// to same divisor for next factor finding.
 			// else increment divisor
 			if (divisible)
