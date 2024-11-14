@@ -20,6 +20,12 @@ public class Day17Tests
 2546548887735
 4322674655533";
 
+private readonly string input2 = @"111111111111
+999999999991
+999999999991
+999999999991
+999999999991";
+
 	[Fact]
 	public void Part1ShouldMatchExampleCount()
 	{
@@ -37,6 +43,16 @@ public class Day17Tests
 
 		var answer = day.Part2();
 
-		answer.Should().Be("51");
+		answer.Should().Be("94");
+	}
+
+		[Fact]
+	public void Part2ShouldMatchExampleCount2()
+	{
+		var day = new Day17(input);
+
+		var answer = day.Part2();
+
+		answer.Should().Be("71");
 	}
 }

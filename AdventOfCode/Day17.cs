@@ -3,68 +3,181 @@
 public class Day17(string input) : IAdventDay
 {
 	private int[,] InputArray { get; } = input.Split('\n').Select(s => s.Select(ss => int.Parse(ss.ToString()))).To2DArray();
+	private enum Direction { Left, Right, Up, Down }
 
 	public string Part1()
 	{
-
-		var test = ShortestPath(InputArray);
+		var test = Part1ModifiedDijkstras(InputArray);
 
 		return test.ToString();
-		throw new NotImplementedException();
 	}
 
-	/// <summary>
-	/// I'm trying to get Copilot to generate this for me.
-	/// It's a modified version of Dijkstra's algorithm.
-	/// </summary>
-	/// <param name="grid"></param>
-	/// <returns></returns>
-	public static int ShortestPath(int[,] grid)
+	private static int Part1ModifiedDijkstras(int[,] grid)
 	{
-		int rows = grid.GetLength(0);
-		int cols = grid.GetLength(1);
-		var dist = new int[rows, cols, 5, 5]; // last dimension for lastDir and consecutive
-		for (int i = 0; i < rows; i++)
-			for (int j = 0; j < cols; j++)
-				for (int k = 0; k < 5; k++)
-					for (int l = 0; l < 5; l++)
-						dist[i, j, k, l] = int.MaxValue;
-		dist[0, 0, 0, 0] = grid[0, 0]; // start at top left
-		var minHeap = new SortedSet<(int dist, int x, int y, int lastDir, int consecutive)>() { (dist[0, 0, 0, 0], 0, 0, 0, 0) };
+		var rows = grid.GetLength(0);
+		var cols = grid.GetLength(1);
+		var dist = new int[rows, cols];
+		for (var i = 0; i < rows; i++)
+			for (var j = 0; j < cols; j++)
+				dist[i, j] = int.MaxValue;
+		dist[0, 0] = grid[0, 0];
+
+		//tuples over record/object because of equality issues
+		var minHeap = new SortedSet<(int distance, (int x, int y) coords, Direction dir, int consecutive)>() { new(dist[0, 0], (0, 0), Direction.Right, 0) };
+		var history = new HashSet<(int distance, (int x, int y) coords, Direction dir, int consecutive)>() { new(dist[0, 0], (0, 0), Direction.Right, 0) };
+
 		while (minHeap.Count > 0)
 		{
-			var (d, x, y, lastDir, consecutive) = minHeap.Min;
-			minHeap.Remove((d, x, y, lastDir, consecutive));
-			foreach (var (dx, dy, dir) in new[] { (0, 1, 1), (1, 0, 2), (0, -1, 3), (-1, 0, 4) }) // right, down
+			var item = minHeap.Min;
+			// Console.WriteLine($"Current: {item.dir}[{item.consecutive}] {item.coords} = {item.distance}");
+
+			minHeap.Remove(item);
+			history.Add(item);
+
+			foreach (var (dx, dy, dir) in new[] { (0, 1, Direction.Right), (1, 0, Direction.Down), (0, -1, Direction.Left), (-1, 0, Direction.Up) }) // right, down, left, up
 			{
 				// Skip if the current direction is opposite to the last direction
-				if ((lastDir == 1 && dir == 3) || (lastDir == 2 && dir == 4) || (lastDir == 3 && dir == 1) || (lastDir == 4 && dir == 2))
+				if ((item.dir == Direction.Right && dir == Direction.Left)
+					|| (item.dir == Direction.Down && dir == Direction.Up)
+					|| (item.dir == Direction.Left && dir == Direction.Right)
+					|| (item.dir == Direction.Up && dir == Direction.Down))
 					continue;
 
-				int nx = x + dx, ny = y + dy;
+				var nconsecutive = (dir == item.dir) ? item.consecutive + 1 : 0;
+				if (nconsecutive > 2)
+					continue;
+
+				int nx = item.coords.x + dx, ny = item.coords.y + dy;
 				if (nx >= 0 && nx < rows && ny >= 0 && ny < cols)
 				{
-					int nd = d + grid[nx, ny];
-					int nconsecutive = (dir == lastDir) ? consecutive + 1 : 1;
-					if (nconsecutive <= 4 && nd < dist[nx, ny, dir, nconsecutive])
+					if (nx == rows - 1 && ny == cols - 1)
 					{
-						minHeap.Remove((dist[nx, ny, dir, nconsecutive], nx, ny, dir, nconsecutive));
-						dist[nx, ny, dir, nconsecutive] = nd;
-						minHeap.Add((nd, nx, ny, dir, nconsecutive));
+						return item.distance + grid[nx, ny] - grid[0, 0];
+					}
+
+					var nd = item.distance + grid[nx, ny];
+					// Console.WriteLine($"Checking: {dir}[{nconsecutive}] ({nx}, {ny}) = {nd}");
+					if (history.Contains(new(nd, (nx, ny), dir, nconsecutive)))
+						continue;
+
+					//aggressively review previous steps
+					minHeap.Add(new(nd, (nx, ny), dir, nconsecutive));
+
+					if (nd <= dist[nx, ny])
+					{
+						dist[nx, ny] = nd;
 					}
 				}
 			}
+
+
 		}
-		int minDist = int.MaxValue;
-		for (int i = 0; i < 4; i++)
-			for (int j = 0; j < 4; j++)
-				minDist = Math.Min(minDist, dist[rows - 1, cols - 1, i, j]); // end at bottom right
-		return minDist;
+
+		return dist[rows - 1, cols - 1] - grid[0, 0];
 	}
+
+	private static void PrintDistance(int[,] dist, int[,] grid, (int, int) coords, Direction dir)
+	{
+		var rows = dist.GetLength(0);
+		var cols = dist.GetLength(1);
+
+		for (var i = 0; i < rows; i++)
+		{
+			for (var j = 0; j < cols; j++)
+			{
+				Console.Write($"{grid[i, j]}(");
+				if (dist[i, j] <= 200)
+				{
+					var x = (i == coords.Item1 && j == coords.Item2) ? GetDirection(dir) : "";
+					Console.Write($"{dist[i, j]}){x}\t");
+				}
+				else
+					Console.Write("?)\t");
+			}
+			Console.WriteLine();
+		}
+	}
+
+	private static string GetDirection(Direction dir) => dir switch
+	{
+		Direction.Left => "<",
+		Direction.Right => ">",
+		Direction.Up => "^",
+		Direction.Down => "v",
+		_ => throw new NotImplementedException()
+	};
 
 	public string Part2()
 	{
-		throw new NotImplementedException();
+		var test = Part2ModifiedDijkstras(InputArray);
+
+		return test.ToString();
 	}
+
+
+	private static int Part2ModifiedDijkstras(int[,] grid)
+	{
+		var rows = grid.GetLength(0);
+		var cols = grid.GetLength(1);
+		var dist = new int[rows, cols];
+		for (var i = 0; i < rows; i++)
+			for (var j = 0; j < cols; j++)
+				dist[i, j] = int.MaxValue;
+		dist[0, 0] = grid[0, 0];
+
+		//tuples over record/object because of equality issues
+		var minHeap = new SortedSet<(int distance, (int x, int y) coords, Direction dir, int consecutive)>() { new(dist[0, 0], (0, 0), Direction.Right, 0) };
+		var history = new HashSet<(int distance, (int x, int y) coords, Direction dir, int consecutive)>() { new(dist[0, 0], (0, 0), Direction.Right, 0) };
+
+		while (minHeap.Count > 0)
+		{
+			var item = minHeap.Min;
+			// Console.WriteLine($"Current: {item.dir}[{item.consecutive}] {item.coords} = {item.distance}");
+
+			minHeap.Remove(item);
+			history.Add(item);
+
+			foreach (var (dx, dy, dir) in new[] { (0, 1, Direction.Right), (1, 0, Direction.Down), (0, -1, Direction.Left), (-1, 0, Direction.Up) }) // right, down, left, up
+			{
+				// Skip if the current direction is opposite to the last direction
+				if ((item.dir == Direction.Right && dir == Direction.Left)
+					|| (item.dir == Direction.Down && dir == Direction.Up)
+					|| (item.dir == Direction.Left && dir == Direction.Right)
+					|| (item.dir == Direction.Up && dir == Direction.Down))
+					continue;
+
+				var nconsecutive = (dir == item.dir) ? item.consecutive + 1 : 0;
+				if (nconsecutive < 4)
+					continue;
+
+				int nx = item.coords.x + dx, ny = item.coords.y + dy;
+				if (nx >= 0 && nx < rows && ny >= 0 && ny < cols)
+				{
+					if (nx == rows - 1 && ny == cols - 1)
+					{
+						return item.distance + grid[nx, ny] - grid[0, 0];
+					}
+
+					var nd = item.distance + grid[nx, ny];
+					// Console.WriteLine($"Checking: {dir}[{nconsecutive}] ({nx}, {ny}) = {nd}");
+					if (history.Contains(new(nd, (nx, ny), dir, nconsecutive)))
+						continue;
+
+					//aggressively review previous steps
+					minHeap.Add(new(nd, (nx, ny), dir, nconsecutive));
+
+					if (nd <= dist[nx, ny])
+					{
+						dist[nx, ny] = nd;
+					}
+				}
+			}
+
+
+		}
+
+		return dist[rows - 1, cols - 1] - grid[0, 0];
+	}
+
 }
 
